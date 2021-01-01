@@ -54,6 +54,24 @@ def transform_H_to_B(vec): # transform a 4x1 vector in H frame to be expressed i
 
     return BH_matrix*vec
 
+
+
+
+
+#-----------Start Setup---------------
+k_flight = 1200  # leg spring constant during flight phase
+k_stance = 2700  # leg spring constant during stance phase
+state = 0  # 0 -> Stance, 1-> flight
+legForce = 0
+tipLinkIndex = 6
+
+outer_hip_joint_index = 2  # positive joint angle represents positive roll (Assuming fixed leg)
+inner_hip_joint_index = 5  # positive joint angle represents positive pitch (Assuming fixed leg)
+pneumatic_joint_index = 6  # joint index of the springy leg
+
+hip_joint_kp = 10
+hip_joint_kd = 0.5
+
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pd.getDataPath())
 p.configureDebugVisualizer(p.COV_ENABLE_GUI,0)
@@ -67,24 +85,14 @@ p.resetDebugVisualizerCamera(cameraDistance=1.62, cameraYaw=47.6, cameraPitch=-3
 # instead of hopping in place many hops as if it's balancing, when it's only because the hopper is oriented almost "perfectly"
 hopperID = p.loadURDF("hopper.urdf", [0, 0, 0.2], [0.00, 0.001, 0, 1])  
 
-p.setJointMotorControl2(hopperID, 6, p.VELOCITY_CONTROL, force=0)
+# Enable Torque Control(Just following the documentation, I find this procedure to be a bit weird though)
+p.setJointMotorControl2(hopperID, pneumatic_joint_index, p.VELOCITY_CONTROL, force=0)
 
 p.setGravity(0,0,-9.81)
 curtime = 0
 dt = 1. / 240.
 
-k_flight = 1200  # leg spring constant during flight phase
-k_stance = 2700  # leg spring constant during stance phase
-state = 0  # 0 -> Stance, 1-> flight
-legForce = 0
-tipLinkIndex = 6
 
-outer_hip_joint_index = 2  # positive joint angle represents positive roll (Assuming fixed leg)
-inner_hip_joint_index = 5  # positive joint angle represents positive pitch (Assuming fixed leg)
-pneumatic_joint_index = 6  # joint index of the springy leg
-
-hip_joint_kp = 10
-hip_joint_kd = 0.5
 
 prev_orientation = np.array([0, 0, 0])
 count = 0
